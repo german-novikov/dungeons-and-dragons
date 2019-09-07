@@ -1,9 +1,22 @@
 #German Novikov
 Solution of test task for BigBank IT.
 
+Application built using Java 1.8, Spring Boot and Gradle wrapper.
+
 ##Run application
-For running application need to run in test class RunGame test StartGame.
-Process and result of game you can see in logs.
+For running application need package project using command 
+```
+gradle bootJar
+```
+after that you can run jar file from console using command 
+```
+java -jar dungeons-and-dragons-0.0.1-SNAPSHOT.jar"
+```
+As argument added possibility to add dragon name.
+ 
+Second variant to run application is run test class RunGame.
+
+<b>Process and result of game you can see in logs.</b>
 
 ##First solution of "Dragons of Mugloar"
 First solution consist:

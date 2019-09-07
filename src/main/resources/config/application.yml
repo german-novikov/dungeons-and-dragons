@@ -1,3 +1,6 @@
 dungeons:
   rest:
     url: https://dragonsofmugloar.com/api/v2/
+
+server:
+  port: 8085

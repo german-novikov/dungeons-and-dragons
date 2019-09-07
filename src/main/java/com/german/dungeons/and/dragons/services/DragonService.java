@@ -48,7 +48,7 @@ public class DragonService {
                 log.info("Score: " + dragonData.getScore() + " lives: " + dragonData.getLives() + " level: " + dragonData.getLevel()
                         + " gold: " + dragonData.getGold());
                 if(result.getLives() == 0){
-                    log.error("High score: " + result.getScore());
+                    log.error("High score of dragon " + dragonData.getName() + " is: " + result.getScore());
                 }
                 if(!result.getSuccess()) {
                     dragonData.setFailedTask(dragonData.getFailedTask() + 1);
