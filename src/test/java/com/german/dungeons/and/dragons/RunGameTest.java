@@ -14,8 +14,7 @@ public class RunGameTest {
     public DragonService dragonService;
 
     @Test
-    public void runApplicationWithoutError() {
+    public void testApplicationRun() {
         dragonService.startGame("German Novikov");
     }
-
 }
