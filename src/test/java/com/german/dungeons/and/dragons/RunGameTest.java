@@ -9,12 +9,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class RunGame {
+public class RunGameTest {
     @Autowired
     public DragonService dragonService;
 
     @Test
-    public void startGame() {
+    public void runApplicationWithoutError() {
         dragonService.startGame("German Novikov");
     }
 

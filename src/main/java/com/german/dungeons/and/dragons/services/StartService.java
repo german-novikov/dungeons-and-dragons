@@ -20,12 +20,11 @@ public class StartService {
     private static final String GAME_START_ENDPOINT = "game/start";
 
     public GameStartResponse statGame() {
-        GameStartResponse response = null;
         try {
-            response = restTemplate.postForObject(mainUrl + GAME_START_ENDPOINT, null, GameStartResponse.class);
+            return restTemplate.postForObject(mainUrl + GAME_START_ENDPOINT, null, GameStartResponse.class);
         }catch (Exception ex) {
-            log.error("Request exception: " + ex);
+            log.error(String.format("Request exception: %s", ex));
+            return new GameStartResponse();
         }
-        return response;
     }
 }

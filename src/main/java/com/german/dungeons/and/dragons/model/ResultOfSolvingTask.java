@@ -3,7 +3,7 @@ package com.german.dungeons.and.dragons.model;
 import lombok.Data;
 
 @Data
-public class Result {
+public class ResultOfSolvingTask {
     private Boolean success;
     private Integer lives;
     private Integer gold;

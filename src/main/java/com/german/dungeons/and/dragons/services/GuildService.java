@@ -1,6 +1,6 @@
 package com.german.dungeons.and.dragons.services;
 
-import com.german.dungeons.and.dragons.model.Result;
+import com.german.dungeons.and.dragons.model.ResultOfSolvingTask;
 import com.german.dungeons.and.dragons.model.Task;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,20 +35,20 @@ public class GuildService {
         try{
             messageboard = Arrays.asList(restTemplate.getForObject(url, Task[].class));
         }catch (Exception ex){
-            log.error("Can not see messageboard: " + ex);
+            log.error(String.format("Can not see messageboard: %s", ex));
         }
 
     }
 
-    public Result solveTask(String gameId){
+    public ResultOfSolvingTask solveTask(String gameId){
         String url = mainUrl + gameId + SOLVE_TASK_ENDPOINT + messageboard.get(0).getAdId();
-        log.info(messageboard.get(0).getProbability().getTitle());
+        log.info(messageboard.get(0).toString());
         try{
-            return restTemplate.postForObject(url, null, Result.class);
+            return restTemplate.postForObject(url, null, ResultOfSolvingTask.class);
         }catch (Exception ex) {
-            log.error("Can not solve the task: " + messageboard.get(0).getAdId() + " stack: " + ex + " URL: " + url);
+            log.error(String.format("Can not solve the task: %s URL: %s \n %s",messageboard.get(0).getAdId(), url, ex));
+            return new ResultOfSolvingTask();
         }
-        return null;
     }
 
     public void openMessageboard(String gameId){
@@ -79,7 +79,7 @@ public class GuildService {
     }
 
     private void countHighRiskTask(){
-        numberOfEncryptedTasks = messageboard.stream().filter(task -> task.getProbability().getLevel() > 4).count();
+        numberOfHighRiskTask = messageboard.stream().filter(task -> task.getProbability().getLevel() > 4).count();
     }
 
     public Long getNumberOfHighRiskTask() {

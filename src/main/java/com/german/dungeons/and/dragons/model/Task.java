@@ -17,4 +17,9 @@ public class Task {
     public void setProbability(String probability){
         this.probability = TaskProbability.getByTitle(probability);
     }
+
+    @Override
+    public String toString(){
+        return String.format("Message: %s, probability %s", message, probability.getTitle() );
+    }
 }

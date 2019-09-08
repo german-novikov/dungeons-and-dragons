@@ -7,9 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
+import org.springframework.util.StringUtils;
 
 @Service
 @Slf4j
@@ -19,9 +17,6 @@ public class DragonService {
     @Value("${dungeons.rest.url}")
     private String mainUrl;
 
-    private static final String GAME_START_ENDPOINT = "game/start";
-
-    private final RestTemplate restTemplate;
     private final ShopService shopService;
     private final GuildService guildService;
     private final StartService startService;
@@ -29,7 +24,7 @@ public class DragonService {
 
     public void startGame(String dragonName) {
         GameStartResponse gameStart = startService.statGame();
-        if(gameStart != null){
+        if(!StringUtils.isEmpty(gameStart.getGameId())){
             dragonData = DragonData.builder().gameId(gameStart.getGameId()).level(gameStart.getLevel()).lives(gameStart.getLives())
                     .gold(gameStart.getGold()).name(dragonName).score(gameStart.getScore()).failedTask(0).build();
             trainDragon();
@@ -38,17 +33,16 @@ public class DragonService {
 
     public void trainDragon() {
         while(dragonData.getLives() > 0){
-            guildService.openMessageboard(dragonData.getGameId());
+            updateMessageBoard();
             chooseItemToBuyAndBuy();
-            Result result = guildService.solveTask(dragonData.getGameId());
-            if (result != null) {
+            ResultOfSolvingTask result = guildService.solveTask(dragonData.getGameId());
+            if (result.getSuccess() != null) {
                 dragonData.setGold(result.getGold());
                 dragonData.setLives(result.getLives());
                 dragonData.setScore(result.getScore());
-                log.info("Score: " + dragonData.getScore() + " lives: " + dragonData.getLives() + " level: " + dragonData.getLevel()
-                        + " gold: " + dragonData.getGold());
+                log.info(dragonData.toString());
                 if(result.getLives() == 0){
-                    log.error("High score of dragon " + dragonData.getName() + " is: " + result.getScore());
+                    log.info(String.format("High score of dragon %s is: %s",dragonData.getName(), result.getScore()));
                 }
                 if(!result.getSuccess()) {
                     dragonData.setFailedTask(dragonData.getFailedTask() + 1);
@@ -58,46 +52,61 @@ public class DragonService {
     }
 
     private void chooseItemToBuyAndBuy() {
-        List<Item> itemsInShop = shopService.viewAllItemsInShop(dragonData.getGameId());
+        shopService.viewAllItemsInShop(dragonData.getGameId());
         if(dragonData.getLives() <= 2){
-            buyItemAndReturnSuccessOrNot(ItemType.HEALING_POTION);
+            buyItem(ItemType.HEALING_POTION);
         }
         if(guildService.getNumberOfEncryptedTasks() > 4 ){
             if(dragonData.getLevel() >= 15){
-                buyItemAndReturnSuccessOrNot(ItemType.BOOK_OF_MEGATRICKS);
+                buyExpensiveItem(ItemType.BOOK_OF_MEGATRICKS, ItemType.BOOK_OF_TRICKS);
             }else{
-                buyItemAndReturnSuccessOrNot(ItemType.BOOK_OF_TRICKS);
+                buyItem(ItemType.BOOK_OF_TRICKS);
             }
         }
         if(dragonData.getFailedTask() >= 2) {
             if(dragonData.getLevel() >= 15){
-                if(buyItemAndReturnSuccessOrNot(ItemType.CLAW_HONING)){
+                if(buyExpensiveItem(ItemType.CLAW_HONING, ItemType.CLAW_SHARPENING).isShoppingSuccess()){
                     dragonData.setFailedTask(0);
                 }
             }else{
-                if(buyItemAndReturnSuccessOrNot(ItemType.CLAW_SHARPENING)){
+                if(buyItem(ItemType.CLAW_SHARPENING).isShoppingSuccess()){
                     dragonData.setFailedTask(0);
                 }
             }
         }
         if(guildService.getNumberOfHighRiskTask() > 4) {
             if(dragonData.getLevel() >= 15){
-                buyItemAndReturnSuccessOrNot(ItemType.POTION_OF_AWESOME_WINGS);
+                buyExpensiveItem(ItemType.POTION_OF_AWESOME_WINGS, ItemType.POTION_OF_STRONGER_WINGS);
             }else{
-                buyItemAndReturnSuccessOrNot(ItemType.POTION_OF_STRONGER_WINGS);
+                buyItem(ItemType.POTION_OF_STRONGER_WINGS);
             }
         }
     }
 
-    private boolean buyItemAndReturnSuccessOrNot(ItemType itemType) {
+    private ResultOfBuying buyItem(ItemType itemType) {
+        ResultOfBuying resultOfBuying;
         try{
-            ResultOfBuying resultOfBuying = shopService.buyItem(itemType,dragonData.getGameId(), dragonData.getGold());
+            resultOfBuying = shopService.buyItem(itemType,dragonData.getGameId(), dragonData.getGold());
             dragonData.setGold(resultOfBuying.getGold());
             dragonData.setLevel(resultOfBuying.getLevel());
-            return true;
+            updateMessageBoard();
         }catch (PurchaseException ex){
             log.info(ex.getMessage());
-            return false;
+            resultOfBuying = new ResultOfBuying();
+            resultOfBuying.setShoppingSuccess(false);
         }
+        return resultOfBuying;
+    }
+
+    private ResultOfBuying buyExpensiveItem(ItemType expensiveItem, ItemType cheapSubstituteItem) {
+        ResultOfBuying resultOfBuying = buyItem(expensiveItem);
+        if (!resultOfBuying.isShoppingSuccess()) {
+            return buyItem(cheapSubstituteItem);
+        }
+        return resultOfBuying;
+    }
+
+    private void updateMessageBoard(){
+        guildService.openMessageboard(dragonData.getGameId());
     }
 }

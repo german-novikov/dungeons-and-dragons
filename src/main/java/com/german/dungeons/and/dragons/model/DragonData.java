@@ -14,4 +14,8 @@ public class DragonData {
     private String gameId;
     private Integer failedTask;
 
+    @Override
+    public String toString(){
+        return String.format("Dragon name: %s, level %s, gold %s, lives %s", name, level, gold, lives);
+    }
 }

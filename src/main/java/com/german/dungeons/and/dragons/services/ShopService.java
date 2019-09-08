@@ -20,25 +20,23 @@ import java.util.List;
 public class ShopService {
     private static final String SHOP_ENDPOINT = "/shop";
     private static final String ITEM_BUY_ENDPOINT = "/buy/";
-    //@Autowired
+
     private final RestTemplate restTemplate;
     private List<Item> items = new ArrayList<>();
     @Value("${dungeons.rest.url}")
     private String mainUrl;
 
-    public List<Item> viewAllItemsInShop(String gameId) {
+    public void viewAllItemsInShop(String gameId) {
         String url = mainUrl + gameId + SHOP_ENDPOINT;
         try{
             items = Arrays.asList(restTemplate.getForObject(url, Item[].class));
         }catch (Exception ex) {
-            log.error("Messageboard get failed with the exception", ex);
+            log.error(String.format("Messageboard get failed with the exception: ", ex));
         }
-
-        return items;
     }
 
     public ResultOfBuying buyItem(ItemType itemType, String gameId, Integer gold) throws PurchaseException {
-        if (isEnoughGold("hpot",gold)) {
+        if (isEnoughGold(itemType.getValue(), gold)) {
         String url = mainUrl + gameId + SHOP_ENDPOINT +ITEM_BUY_ENDPOINT + itemType.getValue();
             try{
                 return restTemplate.postForObject(url,null, ResultOfBuying.class);

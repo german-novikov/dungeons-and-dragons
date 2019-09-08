@@ -11,7 +11,11 @@ public enum ItemType {
     CLAW_HONING("ch"),
     CLAW_SHARPENING("cs"),
     POTION_OF_AWESOME_WINGS("wingpotmax"),
-    POTION_OF_STRONGER_WINGS("wingpot");
+    POTION_OF_STRONGER_WINGS("wingpot"),
+    ROCKET_FUEL("rf"),
+    IRON_PLATING("iron"),
+    COPPER_PLATING("wax"),
+    GASOLINE("gas");
 
     private String value;
 
